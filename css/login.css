@@ -1,0 +1,269 @@
+/* =========================
+   RESET
+========================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+/* =========================
+   BODY
+========================= */
+
+body {
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    padding: 20px;
+
+    font-family: Arial, sans-serif;
+
+    background: #f1f5f2;
+
+    color: #333;
+}
+
+
+/* =========================
+   LOGIN TITLE
+========================= */
+
+body > h2 {
+    margin-bottom: 20px;
+
+    color: #163a24;
+
+    font-size: 28px;
+
+    text-align: center;
+}
+
+
+/* =========================
+   ERROR MESSAGE
+========================= */
+
+body > p {
+    width: 400px;
+
+    margin-bottom: 15px;
+
+    padding: 12px 15px;
+
+    background: #ffe5e5;
+
+    color: #c62828;
+
+    border: 1px solid #f5b5b5;
+
+    border-radius: 6px;
+
+    text-align: center;
+
+    font-size: 14px;
+}
+
+body.dark-mode {
+    background: #111714;
+    color: #e8eee9;
+}
+
+body.dark-mode > h2 {
+    color: #e8eee9;
+}
+
+body.dark-mode > form {
+    background: #1b241f;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.35);
+}
+
+body.dark-mode > form label {
+    color: #dce5df;
+}
+
+body.dark-mode > form input {
+    background: #243229;
+    color: #ffffff;
+    border-color: #3b4a40;
+}
+
+body.dark-mode > p {
+    background: #3a1d20;
+    color: #ffaaaa;
+}
+
+body.dark-mode .dark-mode-toggle {
+    position: fixed;
+    right: 25px;
+    bottom: 25px;
+    z-index: 9999;
+    width: 48px;
+    height: 48px;
+    border: 0;
+    border-radius: 50%;
+    background: #f4c542;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.dark-mode-toggle {
+    position: fixed;
+    right: 25px;
+    bottom: 25px;
+    z-index: 9999;
+    width: 48px;
+    height: 48px;
+    border: 0;
+    border-radius: 50%;
+    background: #2e7d32;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+
+/* =========================
+   LOGIN FORM
+========================= */
+
+body > form {
+    width: 400px;
+
+    padding: 35px;
+
+    background: #ffffff;
+
+    border-radius: 12px;
+
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.10);
+}
+
+
+/* =========================
+   LABEL
+========================= */
+
+body > form label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #333;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+
+/* =========================
+   INPUT
+========================= */
+
+body > form input {
+    width: 100%;
+
+    padding: 12px 13px;
+
+    border: 1px solid #ccc;
+
+    border-radius: 6px;
+
+    outline: none;
+
+    font-size: 15px;
+
+    font-family: Arial, sans-serif;
+
+    transition: 0.2s ease;
+}
+
+
+/* Input Focus */
+
+body > form input:focus {
+    border-color: #2e7d32;
+
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.10);
+}
+
+
+/* =========================
+   LOGIN BUTTON
+========================= */
+
+body > form button {
+    width: 100%;
+
+    padding: 13px;
+
+    border: none;
+
+    border-radius: 6px;
+
+    background: #2e7d32;
+
+    color: white;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+
+/* Hover */
+
+body > form button:hover {
+    background: #245f27;
+
+    transform: translateY(-1px);
+}
+
+
+/* Click */
+
+body > form button:active {
+    transform: translateY(0);
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 500px) {
+
+    body {
+        padding: 15px;
+    }
+
+    body > h2 {
+        font-size: 23px;
+    }
+
+    body > form {
+        width: 100%;
+
+        max-width: 400px;
+
+        padding: 25px 20px;
+    }
+
+    body > p {
+        width: 100%;
+
+        max-width: 400px;
+    }
+}

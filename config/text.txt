@@ -1,0 +1,205 @@
+CREATE DATABASE MarketLink;
+
+USE MarketLink;
+
+
+-- =========================================
+-- 1. USERS
+-- =========================================
+
+CREATE TABLE Users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('Customer', 'Farmer', 'Admin') NOT NULL,
+    phone VARCHAR(20),
+    status ENUM('Active', 'Inactive') DEFAULT 'Active'
+);
+
+
+-- =========================================
+-- 2. MARKETS
+-- =========================================
+
+CREATE TABLE Markets (
+    market_id INT AUTO_INCREMENT PRIMARY KEY,
+    market_name VARCHAR(100) NOT NULL,
+    location VARCHAR(255),
+    latitude DECIMAL(10,8),
+    longitude DECIMAL(11,8),
+    map_provider VARCHAR(50)
+);
+
+
+-- =========================================
+-- 3. PRODUCTS
+-- =========================================
+
+CREATE TABLE Products (
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
+    farmer_id INT NOT NULL,
+    market_id INT NOT NULL,
+    product_name VARCHAR(100) NOT NULL,
+    category VARCHAR(100),
+    image_name VARCHAR(255),
+    price DECIMAL(10,2) NOT NULL,
+    stock INT DEFAULT 0,
+    status ENUM('Available', 'Sold Out') DEFAULT 'Available',
+
+    FOREIGN KEY (farmer_id)
+        REFERENCES Users(user_id),
+
+    FOREIGN KEY (market_id)
+        REFERENCES Markets(market_id)
+);
+
+
+-- =========================================
+-- 4. ORDERS
+-- =========================================
+
+CREATE TABLE Orders (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    total_price DECIMAL(10,2) NOT NULL,
+    pickup_date DATE,
+    pickup_time TIME,
+
+    status ENUM(
+        'Placed',
+        'Accepted',
+        'Ready',
+        'Completed',
+        'Cancelled',
+        'Declined'
+    ) DEFAULT 'Placed',
+
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (customer_id)
+        REFERENCES Users(user_id),
+
+    FOREIGN KEY (product_id)
+        REFERENCES Products(product_id)
+);
+
+
+-- =========================================
+-- 5. REVIEWS
+-- =========================================
+
+CREATE TABLE Reviews (
+    review_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    product_id INT NOT NULL,
+    rating INT CHECK (rating BETWEEN 1 AND 5),
+    comment TEXT,
+    review_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id)
+        REFERENCES Users(user_id),
+
+    FOREIGN KEY (product_id)
+        REFERENCES Products(product_id)
+);
+
+
+-- =========================================
+-- 6. REPORTS
+-- =========================================
+
+CREATE TABLE Reports (
+    report_id INT AUTO_INCREMENT PRIMARY KEY,
+    farmer_id INT NOT NULL,
+    total_orders INT DEFAULT 0,
+    total_sales DECIMAL(10,2) DEFAULT 0.00,
+    best_seller VARCHAR(100),
+    report_date DATE,
+
+    FOREIGN KEY (farmer_id)
+        REFERENCES Users(user_id)
+);
+
+
+-- =========================================
+-- 7. FAVORITES
+-- =========================================
+
+CREATE TABLE Favorites (
+    favorite_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    product_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY unique_favorite (
+        user_id,
+        product_id
+    ),
+
+    FOREIGN KEY (user_id)
+        REFERENCES Users(user_id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (product_id)
+        REFERENCES Products(product_id)
+        ON DELETE CASCADE
+);
+
+
+-- =========================================
+-- 8. NOTIFICATIONS
+-- =========================================
+
+CREATE TABLE Notifications (
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    product_id INT NULL,
+    message VARCHAR(255) NOT NULL,
+    is_read TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id)
+        REFERENCES Users(user_id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (product_id)
+        REFERENCES Products(product_id)
+        ON DELETE CASCADE
+);
+
+
+-- =========================================
+-- 9. STOCK TEMPLATES
+-- =========================================
+
+CREATE TABLE Stock_Templates (
+    template_id INT AUTO_INCREMENT PRIMARY KEY,
+    farmer_id INT NOT NULL,
+    product_id INT NOT NULL,
+
+    day_of_week ENUM(
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday'
+    ) NOT NULL,
+
+    price DECIMAL(10,2) NOT NULL,
+    stock INT DEFAULT 0,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (farmer_id)
+        REFERENCES Users(user_id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (product_id)
+        REFERENCES Products(product_id)
+        ON DELETE CASCADE
+);
