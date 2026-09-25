@@ -16,13 +16,12 @@ if (!isset($_SESSION['user_id'])) {
 
 }
 
-if ($_SESSION['role'] !== 'Farmer') {
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Farmer') {
 
     header("Location: ../auth/login.php");
     exit();
 
 }
-
 
 $farmer_id = (int) $_SESSION['user_id'];
 
@@ -84,7 +83,7 @@ if (isset($_POST['update_product'])) {
 
 
         // =====================================
-        // CHECK PRODUCT BELONGS TO FARMER
+        // CHECK PRODUCT
         // =====================================
 
         $check_query = "
@@ -99,28 +98,29 @@ if (isset($_POST['update_product'])) {
             LIMIT 1
         ";
 
-
-        $stmt = mysqli_prepare(
+        $check_stmt = mysqli_prepare(
             $conn,
             $check_query
         );
 
-
         mysqli_stmt_bind_param(
-            $stmt,
+            $check_stmt,
             "ii",
             $product_id,
             $farmer_id
         );
 
+        mysqli_stmt_execute($check_stmt);
 
-        mysqli_stmt_execute($stmt);
+        $check_result = mysqli_stmt_get_result(
+            $check_stmt
+        );
 
+        $product = mysqli_fetch_assoc(
+            $check_result
+        );
 
-        $result = mysqli_stmt_get_result($stmt);
-
-
-        $product = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($check_stmt);
 
 
         if (!$product) {
@@ -130,6 +130,17 @@ if (isset($_POST['update_product'])) {
         }
 
         else {
+
+
+            // =====================================
+            // SAVE OLD VALUES
+            // =====================================
+
+            $old_stock = (int) $product['stock'];
+
+            $old_status = $product['status'];
+
+            $product_name = $product['product_name'];
 
 
             // =====================================
@@ -161,15 +172,13 @@ if (isset($_POST['update_product'])) {
                 AND farmer_id = ?
             ";
 
-
-            $stmt = mysqli_prepare(
+            $update_stmt = mysqli_prepare(
                 $conn,
                 $update_query
             );
 
-
             mysqli_stmt_bind_param(
-                $stmt,
+                $update_stmt,
                 "disii",
                 $price,
                 $stock,
@@ -179,14 +188,14 @@ if (isset($_POST['update_product'])) {
             );
 
 
-            if (mysqli_stmt_execute($stmt)) {
+            if (mysqli_stmt_execute($update_stmt)) {
+
 
                 // =================================
-                // RESTOCK NOTIFICATION
+                // RESTOCK CHECK
                 // =================================
 
-                $old_stock = (int) $product['stock'];
-                $old_status = $product['status'];
+                $is_restock = false;
 
 
                 if (
@@ -198,9 +207,21 @@ if (isset($_POST['update_product'])) {
                     $stock > 0
                 ) {
 
+                    $is_restock = true;
 
-                    // Find customers who favorited
-                    // this product
+                }
+
+
+                // =================================
+                // SEND RESTOCK NOTIFICATION
+                // =================================
+
+                if ($is_restock) {
+
+
+                    // ---------------------------------
+                    // GET CUSTOMERS WHO FAVORITED PRODUCT
+                    // ---------------------------------
 
                     $favorite_query = "
                         SELECT DISTINCT user_id
@@ -208,13 +229,10 @@ if (isset($_POST['update_product'])) {
                         WHERE product_id = ?
                     ";
 
-
-                    $favorite_stmt =
-                        mysqli_prepare(
-                            $conn,
-                            $favorite_query
-                        );
-
+                    $favorite_stmt = mysqli_prepare(
+                        $conn,
+                        $favorite_query
+                    );
 
                     mysqli_stmt_bind_param(
                         $favorite_stmt,
@@ -222,11 +240,9 @@ if (isset($_POST['update_product'])) {
                         $product_id
                     );
 
-
                     mysqli_stmt_execute(
                         $favorite_stmt
                     );
-
 
                     $favorite_result =
                         mysqli_stmt_get_result(
@@ -234,63 +250,131 @@ if (isset($_POST['update_product'])) {
                         );
 
 
+                    // ---------------------------------
+                    // NOTIFICATION MESSAGE
+                    // ---------------------------------
+
                     $notification_message =
-                        $product['product_name']
-                        . " is back in stock! "
-                        . "You can now place your order.";
+                        $product_name .
+                        " is back in stock! " .
+                        "You can now place your order.";
 
 
-                    while (
-                        $favorite =
-                        mysqli_fetch_assoc(
-                            $favorite_result
+                    // ---------------------------------
+                    // PREPARE NOTIFICATION INSERT
+                    // ---------------------------------
+
+                    $notification_query = "
+                        INSERT INTO Notifications
+                        (
+                            user_id,
+                            product_id,
+                            message,
+                            is_read
                         )
-                    ) {
+                        VALUES
+                        (?, ?, ?, 0)
+                    ";
 
-                        $customer_id =
-                            (int) $favorite['user_id'];
-
-
-                        $notification_query = "
-                            INSERT INTO Notifications
-                            (
-                                user_id,
-                                product_id,
-                                message,
-                                is_read
-                            )
-                            VALUES
-                            (?, ?, ?, 0)
-                        ";
-
-
-                        $notification_stmt =
-                            mysqli_prepare(
-                                $conn,
-                                $notification_query
-                            );
-
-
-                        mysqli_stmt_bind_param(
-                            $notification_stmt,
-                            "iis",
-                            $customer_id,
-                            $product_id,
-                            $notification_message
+                    $notification_stmt =
+                        mysqli_prepare(
+                            $conn,
+                            $notification_query
                         );
 
 
-                        mysqli_stmt_execute(
-                            $notification_stmt
-                        );
+                    if (!$notification_stmt) {
+
+                        $error =
+                            "Product updated, but notification system has an error: "
+                            . mysqli_error($conn);
 
                     }
 
+                    else {
+
+
+                        $notification_count = 0;
+
+
+                        // ---------------------------------
+                        // INSERT FOR EVERY FAVORITED CUSTOMER
+                        // ---------------------------------
+
+                        while (
+                            $favorite =
+                            mysqli_fetch_assoc(
+                                $favorite_result
+                            )
+                        ) {
+
+                            $customer_id =
+                                (int) $favorite['user_id'];
+
+
+                            mysqli_stmt_bind_param(
+                                $notification_stmt,
+                                "iis",
+                                $customer_id,
+                                $product_id,
+                                $notification_message
+                            );
+
+
+                            if (
+                                mysqli_stmt_execute(
+                                    $notification_stmt
+                                )
+                            ) {
+
+                                $notification_count++;
+
+                            }
+
+                        }
+
+
+                        mysqli_stmt_close(
+                            $notification_stmt
+                        );
+
+
+                        // ---------------------------------
+                        // MESSAGE
+                        // ---------------------------------
+
+                        if ($notification_count > 0) {
+
+                            $success =
+                                "Product updated successfully. "
+                                . $notification_count
+                                . " customer notification(s) sent.";
+
+                        }
+
+                        else {
+
+                            $success =
+                                "Product updated successfully. "
+                                . "No customers have favorited this product yet.";
+
+                        }
+
+                    }
+
+
+                    mysqli_stmt_close(
+                        $favorite_stmt
+                    );
+
                 }
 
+                else {
 
-                $success =
-                    "Product stock and price updated successfully.";
+                    $success =
+                        "Product stock and price updated successfully.";
+
+                }
 
             }
 
@@ -300,6 +384,11 @@ if (isset($_POST['update_product'])) {
                     "Unable to update product. Please try again.";
 
             }
+
+
+            mysqli_stmt_close(
+                $update_stmt
+            );
 
         }
 
@@ -341,21 +430,19 @@ $stmt = mysqli_prepare(
     $query
 );
 
-
 mysqli_stmt_bind_param(
     $stmt,
     "i",
     $farmer_id
 );
 
-
 mysqli_stmt_execute($stmt);
-
 
 $products_result =
     mysqli_stmt_get_result($stmt);
 
 ?>
+
 
 <!DOCTYPE html>
 
@@ -383,10 +470,6 @@ $products_result =
 
     <style>
 
-        /* =====================================
-           PAGE
-        ===================================== */
-
         .farmer-main {
 
             margin-left: 240px;
@@ -408,10 +491,6 @@ $products_result =
 
         }
 
-
-        /* =====================================
-           PAGE HEADER
-        ===================================== */
 
         .page-header {
 
@@ -439,10 +518,6 @@ $products_result =
 
         }
 
-
-        /* =====================================
-           MESSAGES
-        ===================================== */
 
         .success-message {
 
@@ -477,10 +552,6 @@ $products_result =
 
         }
 
-
-        /* =====================================
-           INFO BOX
-        ===================================== */
 
         .info-box {
 
@@ -519,10 +590,6 @@ $products_result =
         }
 
 
-        /* =====================================
-           PRODUCTS GRID
-        ===================================== */
-
         .products-grid {
 
             display: grid;
@@ -534,10 +601,6 @@ $products_result =
 
         }
 
-
-        /* =====================================
-           PRODUCT CARD
-        ===================================== */
 
         .product-card {
 
@@ -589,10 +652,6 @@ $products_result =
         }
 
 
-        /* =====================================
-           STATUS
-        ===================================== */
-
         .status {
 
             padding: 6px 10px;
@@ -625,10 +684,6 @@ $products_result =
 
         }
 
-
-        /* =====================================
-           PRODUCT DETAILS
-        ===================================== */
 
         .product-details {
 
@@ -688,10 +743,6 @@ $products_result =
 
         }
 
-
-        /* =====================================
-           FORM
-        ===================================== */
 
         .update-form {
 
@@ -786,10 +837,6 @@ $products_result =
         }
 
 
-        /* =====================================
-           EMPTY
-        ===================================== */
-
         .empty-box {
 
             background: white;
@@ -823,9 +870,7 @@ $products_result =
         }
 
 
-        /* =====================================
-           SIDEBAR
-        ===================================== */
+        /* SIDEBAR */
 
         .sidebar {
 
@@ -862,8 +907,9 @@ $products_result =
 
             padding: 0 10px 25px;
 
-            border-bottom: 1px solid
-                rgba(255, 255, 255, 0.1);
+            border-bottom:
+                1px solid
+                rgba(255,255,255,0.1);
 
         }
 
@@ -920,15 +966,14 @@ $products_result =
 
             font-size: 14px;
 
-            transition: 0.2s;
-
         }
 
 
         .sidebar-menu a:hover,
         .sidebar-bottom a:hover {
 
-            background: rgba(255,255,255,0.08);
+            background:
+                rgba(255,255,255,0.08);
 
         }
 
@@ -949,9 +994,7 @@ $products_result =
         }
 
 
-        /* =====================================
-           RESPONSIVE
-        ===================================== */
+        /* RESPONSIVE */
 
         @media (max-width: 800px) {
 
@@ -1035,8 +1078,6 @@ $products_result =
     </style>
 
 </head>
-
-<script src="../js/dark-mode.js"></script>
 
 
 <body>
@@ -1178,9 +1219,7 @@ $products_result =
     <div class="weekly-page">
 
 
-        <!-- =====================================
-             HEADER
-        ===================================== -->
+        <!-- HEADER -->
 
         <div class="page-header">
 
@@ -1195,20 +1234,14 @@ $products_result =
         </div>
 
 
-        <!-- =====================================
-             SUCCESS
-        ===================================== -->
+        <!-- SUCCESS -->
 
         <?php if ($success !== ""): ?>
 
             <div class="success-message">
 
                 <?php
-
-                echo htmlspecialchars(
-                    $success
-                );
-
+                echo htmlspecialchars($success);
                 ?>
 
             </div>
@@ -1216,20 +1249,14 @@ $products_result =
         <?php endif; ?>
 
 
-        <!-- =====================================
-             ERROR
-        ===================================== -->
+        <!-- ERROR -->
 
         <?php if ($error !== ""): ?>
 
             <div class="error-message">
 
                 <?php
-
-                echo htmlspecialchars(
-                    $error
-                );
-
+                echo htmlspecialchars($error);
                 ?>
 
             </div>
@@ -1237,9 +1264,7 @@ $products_result =
         <?php endif; ?>
 
 
-        <!-- =====================================
-             INFO
-        ===================================== -->
+        <!-- INFO -->
 
         <div class="info-box">
 
@@ -1248,19 +1273,17 @@ $products_result =
             </h3>
 
             <p>
-                Update the current price and stock
-                quantity for each product. If stock is
-                set to 0, the product will automatically
-                become Sold Out. If stock is greater than
-                0, it will become Available.
+                Update the current price and stock quantity
+                for each product. If stock is set to 0,
+                the product will automatically become Sold Out.
+                When a Sold Out product gets stock again,
+                customers who favorited it will receive a notification.
             </p>
 
         </div>
 
 
-        <!-- =====================================
-             PRODUCTS
-        ===================================== -->
+        <!-- PRODUCTS -->
 
         <?php if (mysqli_num_rows($products_result) > 0): ?>
 
@@ -1277,34 +1300,26 @@ $products_result =
                     <div class="product-card">
 
 
-                        <!-- PRODUCT TOP -->
-
                         <div class="product-top">
-
 
                             <div>
 
                                 <h2 class="product-name">
 
                                     <?php
-
                                     echo htmlspecialchars(
                                         $product['product_name']
                                     );
-
                                     ?>
 
                                 </h2>
 
-
                                 <div class="product-category">
 
                                     <?php
-
                                     echo htmlspecialchars(
                                         $product['category']
                                     );
-
                                     ?>
 
                                 </div>
@@ -1313,22 +1328,17 @@ $products_result =
 
 
                             <?php if (
-                                $product['status']
-                                === "Available"
+                                $product['status'] === "Available"
                             ): ?>
 
                                 <span class="status available">
-
                                     Available
-
                                 </span>
 
                             <?php else: ?>
 
                                 <span class="status sold-out">
-
                                     Sold Out
-
                                 </span>
 
                             <?php endif; ?>
@@ -1336,10 +1346,6 @@ $products_result =
 
                         </div>
 
-
-                        <!-- =================================
-                             CURRENT DETAILS
-                        ================================= -->
 
                         <div class="product-details">
 
@@ -1354,13 +1360,10 @@ $products_result =
 
                                     Rs.
                                     <?php
-
                                     echo number_format(
-                                        (float)
-                                        $product['price'],
+                                        (float) $product['price'],
                                         2
                                     );
-
                                     ?>
 
                                 </strong>
@@ -1377,10 +1380,7 @@ $products_result =
                                 <strong>
 
                                     <?php
-
-                                    echo (int)
-                                        $product['stock'];
-
+                                    echo (int) $product['stock'];
                                     ?>
 
                                 </strong>
@@ -1391,10 +1391,6 @@ $products_result =
                         </div>
 
 
-                        <!-- =================================
-                             MARKET
-                        ================================= -->
-
                         <div class="market-info">
 
                             <strong>
@@ -1402,11 +1398,9 @@ $products_result =
                             </strong>
 
                             <?php
-
                             echo htmlspecialchars(
                                 $product['market_name']
                             );
-
                             ?>
 
 
@@ -1421,21 +1415,15 @@ $products_result =
                                 </strong>
 
                                 <?php
-
                                 echo htmlspecialchars(
                                     $product['location']
                                 );
-
                                 ?>
 
                             <?php endif; ?>
 
                         </div>
 
-
-                        <!-- =================================
-                             UPDATE FORM
-                        ================================= -->
 
                         <form
                             method="POST"
@@ -1457,28 +1445,16 @@ $products_result =
                             <div class="form-row">
 
 
-                                <!-- PRICE -->
-
                                 <div class="form-group">
 
-                                    <label
-                                        for="price_<?php
-                                            echo (int)
-                                                $product['product_id'];
-                                        ?>"
-                                    >
+                                    <label>
 
                                         Price
 
                                     </label>
 
-
                                     <input
                                         type="number"
-                                        id="price_<?php
-                                            echo (int)
-                                                $product['product_id'];
-                                        ?>"
                                         name="price"
                                         value="<?php
                                             echo htmlspecialchars(
@@ -1493,28 +1469,16 @@ $products_result =
                                 </div>
 
 
-                                <!-- STOCK -->
-
                                 <div class="form-group">
 
-                                    <label
-                                        for="stock_<?php
-                                            echo (int)
-                                                $product['product_id'];
-                                        ?>"
-                                    >
+                                    <label>
 
                                         Stock
 
                                     </label>
 
-
                                     <input
                                         type="number"
-                                        id="stock_<?php
-                                            echo (int)
-                                                $product['product_id'];
-                                        ?>"
                                         name="stock"
                                         value="<?php
                                             echo (int)
@@ -1556,10 +1520,6 @@ $products_result =
         <?php else: ?>
 
 
-            <!-- =================================
-                 EMPTY STATE
-            ================================= -->
-
             <div class="empty-box">
 
                 <h3>
@@ -1583,6 +1543,16 @@ $products_result =
 </main>
 
 
+<script src="../js/dark-mode.js"></script>
+
+
 </body>
 
 </html>
+
+
+<?php
+
+mysqli_stmt_close($stmt);
+
+?>

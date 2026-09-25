@@ -617,59 +617,6 @@ if (isset($_POST['add_farmer'])) {
 </button>
 
 
-<script>
-
-    const darkModeToggle =
-        document.getElementById("darkModeToggle");
-
-
-    // Load saved theme
-
-    const savedTheme =
-        localStorage.getItem("marketlink-theme");
-
-
-    if (savedTheme === "dark") {
-
-        document.body.classList.add("dark-mode");
-
-        darkModeToggle.textContent = "☀️";
-
-    }
-
-
-    // Toggle theme
-
-    darkModeToggle.addEventListener("click", function () {
-
-        document.body.classList.toggle("dark-mode");
-
-
-        if (document.body.classList.contains("dark-mode")) {
-
-            localStorage.setItem(
-                "marketlink-theme",
-                "dark"
-            );
-
-            darkModeToggle.textContent = "☀️";
-
-        } else {
-
-            localStorage.setItem(
-                "marketlink-theme",
-                "light"
-            );
-
-            darkModeToggle.textContent = "🌙";
-
-        }
-
-    });
-
-</script>
-
-
 </body>
 
 </html>

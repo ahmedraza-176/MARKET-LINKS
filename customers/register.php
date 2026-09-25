@@ -14,7 +14,6 @@ if (isset($_POST['register'])) {
     $password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
 
-
     // =============================
     // VALIDATION
     // =============================
@@ -36,7 +35,6 @@ if (isset($_POST['register'])) {
         $error = "Passwords do not match.";
 
     } else {
-
 
         // =============================
         // CHECK EMAIL
@@ -68,17 +66,15 @@ if (isset($_POST['register'])) {
 
             mysqli_stmt_execute($check_stmt);
 
-            $check_result =
-                mysqli_stmt_get_result($check_stmt);
-
+            $check_result = mysqli_stmt_get_result(
+                $check_stmt
+            );
 
             if (mysqli_num_rows($check_result) > 0) {
 
-                $error =
-                    "This email is already registered.";
+                $error = "This email is already registered.";
 
             } else {
-
 
                 // =============================
                 // HASH PASSWORD
@@ -88,7 +84,6 @@ if (isset($_POST['register'])) {
                     $password,
                     PASSWORD_DEFAULT
                 );
-
 
                 // =============================
                 // INSERT CUSTOMER
@@ -120,12 +115,9 @@ if (isset($_POST['register'])) {
                     $insert_query
                 );
 
-
                 if (!$insert_stmt) {
 
-                    $error =
-                        "Database error: "
-                        . mysqli_error($conn);
+                    $error = "Database error: " . mysqli_error($conn);
 
                 } else {
 
@@ -138,12 +130,7 @@ if (isset($_POST['register'])) {
                         $phone
                     );
 
-
-                    if (
-                        mysqli_stmt_execute(
-                            $insert_stmt
-                        )
-                    ) {
+                    if (mysqli_stmt_execute($insert_stmt)) {
 
                         header(
                             "Location: ../auth/login.php"
@@ -155,24 +142,15 @@ if (isset($_POST['register'])) {
 
                         $error =
                             "Registration failed: "
-                            . mysqli_stmt_error(
-                                $insert_stmt
-                            );
-
+                            . mysqli_stmt_error($insert_stmt);
                     }
-
                 }
-
             }
-
         }
-
     }
-
 }
 
 ?>
-
 
 <!DOCTYPE html>
 
@@ -180,199 +158,204 @@ if (isset($_POST['register'])) {
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <title>
-        Customer Registration - MarketLink
-    </title>
+<title>
+    Customer Registration - MarketLink
+</title>
 
-    <link
-        rel="stylesheet"
-        href="../css/customers.css?v=2"
-    >
+<link
+    rel="stylesheet"
+    href="../css/customers.css?v=3"
+>
 
-    <script src="../js/dark-mode.js"></script>
+<script src="../js/dark-mode.js"></script>
 
 </head>
 
-
 <body class="register-page">
 
-
-
+<!-- =============================
+     REGISTER CONTAINER
+============================= -->
 
 <div class="register-container">
 
 
-    <h2>
-        MarketLink
-    </h2>
+<h2>
+    MarketLink
+</h2>
+
+<p class="subtitle">
+    Create Customer Account
+</p>
 
 
-    <p class="subtitle">
-        Create Customer Account
-    </p>
+<!-- ERROR MESSAGE -->
+
+<?php if ($error !== ""): ?>
+
+    <div class="error">
+
+        <?php
+        echo htmlspecialchars($error);
+        ?>
+
+    </div>
+
+<?php endif; ?>
 
 
-    <?php if ($error !== ""): ?>
+<!-- REGISTER FORM -->
 
-        <div class="error">
-
-            <?php
-            echo htmlspecialchars($error);
-            ?>
-
-        </div>
-
-    <?php endif; ?>
+<form method="POST">
 
 
-    <form method="POST">
+    <!-- NAME -->
 
+    <div class="form-group">
 
-        <div class="form-group">
+        <label for="name">
+            Full Name
+        </label>
 
-            <label for="name">
-                Full Name
-            </label>
-
-            <input
-                type="text"
-                id="name"
-                name="name"
-                placeholder="Enter your name"
-                value="<?php
-                    echo htmlspecialchars(
-                        $_POST['name'] ?? ''
-                    );
-                ?>"
-                required
-            >
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label for="email">
-                Email
-            </label>
-
-            <input
-                type="email"
-                id="email"
-                name="email"
-                placeholder="Enter your email"
-                value="<?php
-                    echo htmlspecialchars(
-                        $_POST['email'] ?? ''
-                    );
-                ?>"
-                required
-            >
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label for="phone">
-                Phone
-            </label>
-
-            <input
-                type="text"
-                id="phone"
-                name="phone"
-                placeholder="Enter phone number"
-                value="<?php
-                    echo htmlspecialchars(
-                        $_POST['phone'] ?? ''
-                    );
-                ?>"
-            >
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label for="password">
-                Password
-            </label>
-
-            <input
-                type="password"
-                id="password"
-                name="password"
-                placeholder="Enter password"
-                required
-            >
-
-        </div>
-
-
-        <div class="form-group">
-
-            <label for="confirm_password">
-                Confirm Password
-            </label>
-
-            <input
-                type="password"
-                id="confirm_password"
-                name="confirm_password"
-                placeholder="Confirm password"
-                required
-            >
-
-        </div>
-
-
-        <button
-            type="submit"
-            name="register"
-            class="register-btn"
+        <input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="Enter your name"
+            value="<?php
+                echo htmlspecialchars(
+                    $_POST['name'] ?? ''
+                );
+            ?>"
+            required
         >
 
-            Create Account
-
-        </button>
+    </div>
 
 
-    </form>
+    <!-- EMAIL -->
+
+    <div class="form-group">
+
+        <label for="email">
+            Email
+        </label>
+
+        <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Enter your email"
+            value="<?php
+                echo htmlspecialchars(
+                    $_POST['email'] ?? ''
+                );
+            ?>"
+            required
+        >
+
+    </div>
 
 
-    <p class="login-link">
+    <!-- PHONE -->
 
-        Already have an account?
+    <div class="form-group">
 
-        <a href="../auth/login.php">
-            Login
-        </a>
+        <label for="phone">
+            Phone
+        </label>
 
-    </p>
+        <input
+            type="text"
+            id="phone"
+            name="phone"
+            placeholder="Enter phone number"
+            value="<?php
+                echo htmlspecialchars(
+                    $_POST['phone'] ?? ''
+                );
+            ?>"
+        >
+
+    </div>
+
+
+    <!-- PASSWORD -->
+
+    <div class="form-group">
+
+        <label for="password">
+            Password
+        </label>
+
+        <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter password"
+            required
+        >
+
+    </div>
+
+
+    <!-- CONFIRM PASSWORD -->
+
+    <div class="form-group">
+
+        <label for="confirm_password">
+            Confirm Password
+        </label>
+
+        <input
+            type="password"
+            id="confirm_password"
+            name="confirm_password"
+            placeholder="Confirm password"
+            required
+        >
+
+    </div>
+
+
+    <!-- REGISTER BUTTON -->
+
+    <button
+        type="submit"
+        name="register"
+        class="register-btn"
+    >
+
+        Create Account
+
+    </button>
+
+
+</form>
+
+
+<!-- LOGIN LINK -->
+
+<p class="login-link">
+
+    Already have an account?
+
+    <a href="../auth/login.php">
+        Login
+    </a>
+
+</p>
 
 
 </div>
 
-
-<body class="register-page">
-
-<nav class="navbar">
-
-    <div class="logo">MarketLink</div>
-
-    <div class="nav-links">
-        <a href="../auth/login.php">Login</a>
-        <a href="register.php" class="active">Register</a>
-    </div>
-
-</nav>
+</body>
 
 </html>

@@ -4,77 +4,163 @@ session_start();
 
 require_once "../config/connection.php";
 
-// Admin login check
+/* =====================================================
+   ADMIN LOGIN CHECK
+===================================================== */
+
 if (!isset($_SESSION['user_id'])) {
+
     header("Location: ../auth/login.php");
     exit();
+
 }
 
-// Admin role check
+
+/* =====================================================
+   ADMIN ROLE CHECK
+===================================================== */
+
 if ($_SESSION['role'] !== 'Admin') {
+
     header("Location: ../auth/login.php");
     exit();
+
 }
 
 
-// =============================
-// DELETE FARMER
-// =============================
+/* =====================================================
+   DELETE FARMER
+===================================================== */
+
 if (isset($_GET['delete'])) {
 
-    $farmer_id = intval($_GET['delete']);
+    $farmer_id = (int) $_GET['delete'];
 
-    $delete_query = "DELETE FROM Users
-                     WHERE user_id = ?
-                     AND role = 'Farmer'";
+    $delete_query = "
+        DELETE FROM Users
+        WHERE user_id = ?
+        AND role = 'Farmer'
+    ";
 
     $stmt = mysqli_prepare($conn, $delete_query);
-    mysqli_stmt_bind_param($stmt, "i", $farmer_id);
-    mysqli_stmt_execute($stmt);
 
-    header("Location: farmers.php");
-    exit();
-}
+    if ($stmt) {
 
+        mysqli_stmt_bind_param(
+            $stmt,
+            "i",
+            $farmer_id
+        );
 
-// =============================
-// CHANGE STATUS
-// =============================
-if (isset($_GET['status']) && isset($_GET['id'])) {
-
-    $farmer_id = intval($_GET['id']);
-    $status = $_GET['status'];
-
-    if ($status === 'Active' || $status === 'Inactive') {
-
-        $status_query = "UPDATE Users
-                         SET status = ?
-                         WHERE user_id = ?
-                         AND role = 'Farmer'";
-
-        $stmt = mysqli_prepare($conn, $status_query);
-        mysqli_stmt_bind_param($stmt, "si", $status, $farmer_id);
         mysqli_stmt_execute($stmt);
+
+        mysqli_stmt_close($stmt);
     }
 
     header("Location: farmers.php");
     exit();
+
 }
 
 
-// =============================
-// FETCH FARMERS
-// =============================
-$query = "SELECT user_id, name, email, phone, status
-          FROM Users
-          WHERE role = 'Farmer'
-          ORDER BY user_id DESC";
+/* =====================================================
+   CHANGE FARMER STATUS
+===================================================== */
+
+if (
+    isset($_GET['status']) &&
+    isset($_GET['id'])
+) {
+
+    $farmer_id = (int) $_GET['id'];
+
+    $status = $_GET['status'];
+
+    if (
+        $status === 'Active' ||
+        $status === 'Inactive'
+    ) {
+
+        $status_query = "
+            UPDATE Users
+            SET status = ?
+            WHERE user_id = ?
+            AND role = 'Farmer'
+        ";
+
+        $stmt = mysqli_prepare(
+            $conn,
+            $status_query
+        );
+
+        if ($stmt) {
+
+            mysqli_stmt_bind_param(
+                $stmt,
+                "si",
+                $status,
+                $farmer_id
+            );
+
+            mysqli_stmt_execute($stmt);
+
+            mysqli_stmt_close($stmt);
+        }
+    }
+
+    header("Location: farmers.php");
+    exit();
+
+}
+
+
+/* =====================================================
+   FETCH FARMERS + MARKET NAME
+===================================================== */
+
+$query = "
+
+    SELECT
+
+        u.user_id,
+        u.name,
+        u.email,
+        u.phone,
+        u.status,
+
+        GROUP_CONCAT(
+            DISTINCT m.market_name
+            SEPARATOR ', '
+        ) AS market_names
+
+    FROM Users u
+
+    LEFT JOIN Products p
+        ON u.user_id = p.farmer_id
+
+    LEFT JOIN Markets m
+        ON p.market_id = m.market_id
+
+    WHERE u.role = 'Farmer'
+
+    GROUP BY
+
+        u.user_id,
+        u.name,
+        u.email,
+        u.phone,
+        u.status
+
+    ORDER BY u.user_id DESC
+
+";
 
 $result = mysqli_query($conn, $query);
 
 ?>
 
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -88,209 +174,122 @@ $result = mysqli_query($conn, $query);
 
     <title>Manage Farmers - MarketLink</title>
 
-    <link rel="stylesheet" href="../css/admin_style.css">
+
+    <!-- ADMIN CSS -->
+
+    <link
+        rel="stylesheet"
+        href="../css/admin_style.css"
+    >
+
+
+    <!-- FARMERS PAGE CSS -->
 
     <style>
 
-        /* =====================================
-           FARMERS DARK MODE
-        ===================================== */
+        /* =========================================
+           FARMERS PAGE
+        ========================================= */
 
-        body {
-            transition:
-                background 0.25s ease,
-                color 0.25s ease;
+        .farmers-content {
+
+            width: 100%;
+
+            max-width: none;
+
         }
 
-        body.dark-mode {
-            background: #111714;
-            color: #e8eee9;
+
+        /* =========================================
+           MARKET NAME
+        ========================================= */
+
+        .market-name {
+
+            color: #333;
+
+            font-size: 13px;
+
+            line-height: 1.5;
+
         }
 
-        /* Main content */
 
-        body.dark-mode .main-content {
-            background: #111714;
+        /* =========================================
+           DARK MODE
+        ========================================= */
+
+        body.dark-mode .market-name {
+
+            color: #dce5df;
+
         }
 
-        /* Topbar */
 
-        body.dark-mode .topbar h1 {
-            color: #e8eee9;
-        }
+        body.dark-mode .table-subtext {
 
-        body.dark-mode .topbar p {
             color: #aebbb2;
-        }
 
-        body.dark-mode .admin-info strong {
-            color: #e8eee9;
-        }
-
-        body.dark-mode .admin-info span {
-            color: #aebbb2;
-        }
-
-        /* Content box */
-
-        body.dark-mode .content-box {
-            background: #1b241f;
-            color: #e8eee9;
-            box-shadow:
-                0 3px 15px
-                rgba(0, 0, 0, 0.25);
-        }
-
-        /* Page header */
-
-        body.dark-mode .page-header h2 {
-            color: #e8eee9;
-        }
-
-        body.dark-mode .page-header p {
-            color: #aebbb2;
-        }
-
-        /* Table */
-
-        body.dark-mode .table-wrapper {
-            background: #1b241f;
-        }
-
-        body.dark-mode .admin-table {
-            background: #1b241f;
-            color: #e8eee9;
-        }
-
-        body.dark-mode .admin-table th {
-            background: #243229;
-            color: #e8eee9;
-        }
-
-        body.dark-mode .admin-table td {
-            color: #cbd6cf;
-            border-bottom-color: #344139;
-        }
-
-        body.dark-mode .admin-table tbody tr:hover {
-            background: #222d26;
-        }
-
-        /* Buttons */
-
-        body.dark-mode .btn-edit {
-            background: #245c8a;
-            color: #ffffff;
-        }
-
-        body.dark-mode .btn-warning {
-            background: #8a681f;
-            color: #ffffff;
-        }
-
-        body.dark-mode .btn-success {
-            background: #26733d;
-            color: #ffffff;
-        }
-
-        body.dark-mode .btn-delete {
-            background: #8b3030;
-            color: #ffffff;
-        }
-
-        /* No data */
-
-        body.dark-mode .no-data {
-            color: #aebbb2;
-        }
-
-        /* Status */
-
-        body.dark-mode .status.active {
-            background: #173d26;
-            color: #7ee787;
-        }
-
-        body.dark-mode .status.inactive {
-            background: #3d1e22;
-            color: #ff8a8a;
         }
 
 
-        /* =====================================
-           DARK MODE BUTTON
-        ===================================== */
+        /* =========================================
+           FARMER TABLE
+        ========================================= */
 
-        .dark-mode-toggle {
+        .farmers-table {
 
-            position: fixed;
+            width: 100%;
 
-            right: 25px;
+            min-width: 850px;
 
-            bottom: 25px;
+        }
 
-            width: 48px;
 
-            height: 48px;
+        /* =========================================
+           ACTION BUTTONS
+        ========================================= */
 
-            border: none;
-
-            border-radius: 50%;
-
-            background: #198754;
-
-            color: white;
-
-            font-size: 20px;
-
-            cursor: pointer;
+        .table-actions {
 
             display: flex;
 
             align-items: center;
 
-            justify-content: center;
+            flex-wrap: wrap;
 
-            box-shadow:
-                0 4px 15px
-                rgba(0, 0, 0, 0.25);
-
-            z-index: 9999;
-
-            transition: 0.2s ease;
+            gap: 7px;
 
         }
 
 
-        .dark-mode-toggle:hover {
+        .table-actions a {
 
-            transform: scale(1.08);
-
-            background: #157347;
+            white-space: nowrap;
 
         }
 
 
-        body.dark-mode .dark-mode-toggle {
+        /* =========================================
+           RESPONSIVE
+        ========================================= */
 
-            background: #f4c542;
+        @media (max-width: 1100px) {
 
-            color: #111;
+            .farmers-table {
+
+                min-width: 950px;
+
+            }
 
         }
 
 
-        @media (max-width: 600px) {
+        @media (max-width: 650px) {
 
-            .dark-mode-toggle {
+            .farmers-table {
 
-                width: 44px;
-
-                height: 44px;
-
-                right: 15px;
-
-                bottom: 15px;
+                min-width: 950px;
 
             }
 
@@ -304,357 +303,475 @@ $result = mysqli_query($conn, $query);
 <body>
 
 
-    <?php require_once "partials/menu.php"; ?>
+<?php
+
+require_once "partials/menu.php";
+
+?>
 
 
-    <main class="main-content">
+<!-- =================================================
+     MAIN CONTENT
+================================================= -->
+
+<main class="main-content">
 
 
-        <!-- TOPBAR -->
+    <!-- =================================================
+         TOPBAR
+    ================================================= -->
 
-        <div class="topbar">
+    <div class="topbar">
 
-            <div>
+        <div>
 
-                <h1>Farmers</h1>
+            <h1>
+                Farmers
+            </h1>
 
-                <p>Manage MarketLink farmers</p>
-
-            </div>
-
-
-            <div class="admin-info">
-
-                <strong>
-                    <?php echo htmlspecialchars($_SESSION['name']); ?>
-                </strong>
-
-                <span>Admin</span>
-
-            </div>
+            <p>
+                Manage MarketLink farmers
+            </p>
 
         </div>
 
 
-        <!-- CONTENT -->
+        <div class="admin-info">
 
-        <section class="content-box">
+            <strong>
 
+                <?php
 
-            <div class="page-header">
+                echo htmlspecialchars(
+                    $_SESSION['name']
+                );
 
-                <div>
+                ?>
 
-                    <h2>All Farmers</h2>
-
-                    <p>
-                        View and manage registered farmers.
-                    </p>
-
-                </div>
+            </strong>
 
 
-                <a
-                    href="farmer-add.php"
-                    class="add-btn"
-                >
-                    + Add Farmer
-                </a>
+            <span>
+                Admin
+            </span>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =================================================
+         CONTENT BOX
+    ================================================= -->
+
+    <section class="content-box farmers-content">
+
+
+        <!-- =================================================
+             PAGE HEADER
+        ================================================= -->
+
+        <div class="page-header">
+
+
+            <div>
+
+                <h2>
+                    All Farmers
+                </h2>
+
+                <p>
+                    View and manage registered farmers.
+                </p>
 
             </div>
 
 
-            <div class="table-wrapper">
+            <!-- ADD FARMER -->
 
+            <a
+                href="farmer-add.php"
+                class="add-btn"
+            >
+                + Add Farmer
+            </a>
 
-                <table class="admin-table">
 
+        </div>
 
-                    <thead>
 
-                        <tr>
 
-                            <th>ID</th>
+        <!-- =================================================
+             FARMERS TABLE
+        ================================================= -->
 
-                            <th>Name</th>
+        <div class="table-wrapper">
 
-                            <th>Email</th>
 
-                            <th>Phone</th>
+            <table class="admin-table farmers-table">
 
-                            <th>Status</th>
 
-                            <th>Actions</th>
+                <!-- TABLE HEADER -->
 
-                        </tr>
+                <thead>
 
-                    </thead>
+                    <tr>
 
+                        <th>
+                            ID
+                        </th>
 
-                    <tbody>
+                        <th>
+                            Name
+                        </th>
 
+                        <th>
+                            Email
+                        </th>
 
-                        <?php if (mysqli_num_rows($result) > 0): ?>
+                        <th>
+                            Phone
+                        </th>
 
+                        <th>
+                            Market
+                        </th>
 
-                            <?php while ($farmer = mysqli_fetch_assoc($result)): ?>
+                        <th>
+                            Status
+                        </th>
 
+                        <th>
+                            Actions
+                        </th>
 
-                                <tr>
+                    </tr>
 
+                </thead>
 
-                                    <td>
-                                        <?php echo $farmer['user_id']; ?>
-                                    </td>
 
 
-                                    <td>
-                                        <?php
-                                        echo htmlspecialchars(
-                                            $farmer['name']
-                                        );
-                                        ?>
-                                    </td>
+                <!-- TABLE BODY -->
 
+                <tbody>
 
-                                    <td>
-                                        <?php
-                                        echo htmlspecialchars(
-                                            $farmer['email']
-                                        );
-                                        ?>
-                                    </td>
 
+                    <?php if (
+                        $result &&
+                        mysqli_num_rows($result) > 0
+                    ): ?>
 
-                                    <td>
-                                        <?php
-                                        echo htmlspecialchars(
-                                            $farmer['phone'] ?? 'N/A'
-                                        );
-                                        ?>
-                                    </td>
 
-
-                                    <td>
-
-
-                                        <?php if ($farmer['status'] === 'Active'): ?>
-
-
-                                            <span class="status active">
-                                                Active
-                                            </span>
-
-
-                                        <?php else: ?>
-
-
-                                            <span class="status inactive">
-                                                Inactive
-                                            </span>
-
-
-                                        <?php endif; ?>
-
-
-                                    </td>
-
-
-                                    <td>
-
-
-                                        <div class="table-actions">
-
-
-                                            <!-- EDIT -->
-
-                                            <a
-                                                href="farmer-edit.php?id=<?php echo $farmer['user_id']; ?>"
-                                                class="btn-edit"
-                                            >
-                                                Edit
-                                            </a>
-
-
-                                            <!-- STATUS -->
-
-                                            <?php if ($farmer['status'] === 'Active'): ?>
-
-
-                                                <a
-                                                    href="farmers.php?id=<?php echo $farmer['user_id']; ?>&status=Inactive"
-                                                    class="btn-warning"
-                                                >
-                                                    Suspend
-                                                </a>
-
-
-                                            <?php else: ?>
-
-
-                                                <a
-                                                    href="farmers.php?id=<?php echo $farmer['user_id']; ?>&status=Active"
-                                                    class="btn-success"
-                                                >
-                                                    Activate
-                                                </a>
-
-
-                                            <?php endif; ?>
-
-
-                                            <!-- DELETE -->
-
-                                            <a
-                                                href="farmers.php?delete=<?php echo $farmer['user_id']; ?>"
-                                                class="btn-delete"
-                                                onclick="return confirm('Are you sure you want to delete this farmer?');"
-                                            >
-                                                Delete
-                                            </a>
-
-
-                                        </div>
-
-
-                                    </td>
-
-
-                                </tr>
-
-
-                            <?php endwhile; ?>
-
-
-                        <?php else: ?>
+                        <?php while (
+                            $farmer =
+                            mysqli_fetch_assoc($result)
+                        ): ?>
 
 
                             <tr>
 
-                                <td
-                                    colspan="6"
-                                    class="no-data"
-                                >
-                                    No farmers registered yet.
+
+                                <!-- =========================
+                                     ID
+                                ========================== -->
+
+                                <td>
+
+                                    <?php
+
+                                    echo (int)
+                                        $farmer['user_id'];
+
+                                    ?>
+
                                 </td>
+
+
+
+                                <!-- =========================
+                                     NAME
+                                ========================== -->
+
+                                <td>
+
+                                    <?php
+
+                                    echo htmlspecialchars(
+                                        $farmer['name']
+                                    );
+
+                                    ?>
+
+                                </td>
+
+
+
+                                <!-- =========================
+                                     EMAIL
+                                ========================== -->
+
+                                <td>
+
+                                    <?php
+
+                                    echo htmlspecialchars(
+                                        $farmer['email']
+                                    );
+
+                                    ?>
+
+                                </td>
+
+
+
+                                <!-- =========================
+                                     PHONE
+                                ========================== -->
+
+                                <td>
+
+                                    <?php
+
+                                    echo htmlspecialchars(
+                                        $farmer['phone']
+                                        ?? 'N/A'
+                                    );
+
+                                    ?>
+
+                                </td>
+
+
+
+                                <!-- =========================
+                                     MARKET
+                                ========================== -->
+
+                                <td>
+
+                                    <?php
+
+                                    if (
+                                        !empty(
+                                            $farmer['market_names']
+                                        )
+                                    ):
+
+                                    ?>
+
+                                        <span class="market-name">
+
+                                            <?php
+
+                                            echo htmlspecialchars(
+                                                $farmer['market_names']
+                                            );
+
+                                            ?>
+
+                                        </span>
+
+                                    <?php
+
+                                    else:
+
+                                    ?>
+
+                                        <span class="table-subtext">
+
+                                            No Market Assigned
+
+                                        </span>
+
+                                    <?php
+
+                                    endif;
+
+                                    ?>
+
+                                </td>
+
+
+
+                                <!-- =========================
+                                     STATUS
+                                ========================== -->
+
+                                <td>
+
+                                    <?php
+
+                                    if (
+                                        $farmer['status']
+                                        === 'Active'
+                                    ):
+
+                                    ?>
+
+                                        <span class="status active">
+
+                                            Active
+
+                                        </span>
+
+                                    <?php
+
+                                    else:
+
+                                    ?>
+
+                                        <span class="status inactive">
+
+                                            Inactive
+
+                                        </span>
+
+                                    <?php
+
+                                    endif;
+
+                                    ?>
+
+                                </td>
+
+
+
+                                <!-- =========================
+                                     ACTIONS
+                                ========================== -->
+
+                                <td>
+
+                                    <div class="table-actions">
+
+
+                                        <!-- EDIT -->
+
+                                        <a
+                                            href="farmer-edit.php?id=<?php echo (int) $farmer['user_id']; ?>"
+                                            class="btn-edit"
+                                        >
+                                            Edit
+                                        </a>
+
+
+
+                                        <!-- STATUS -->
+
+                                        <?php
+
+                                        if (
+                                            $farmer['status']
+                                            === 'Active'
+                                        ):
+
+                                        ?>
+
+                                            <a
+                                                href="farmers.php?id=<?php echo (int) $farmer['user_id']; ?>&status=Inactive"
+                                                class="btn-warning"
+                                                onclick="return confirm('Are you sure you want to suspend this farmer?');"
+                                            >
+                                                Suspend
+                                            </a>
+
+                                        <?php
+
+                                        else:
+
+                                        ?>
+
+                                            <a
+                                                href="farmers.php?id=<?php echo (int) $farmer['user_id']; ?>&status=Active"
+                                                class="btn-success"
+                                                onclick="return confirm('Activate this farmer?');"
+                                            >
+                                                Activate
+                                            </a>
+
+                                        <?php
+
+                                        endif;
+
+                                        ?>
+
+
+
+                                        <!-- DELETE -->
+
+                                        <a
+                                            href="farmers.php?delete=<?php echo (int) $farmer['user_id']; ?>"
+                                            class="btn-delete"
+                                            onclick="return confirm('Are you sure you want to delete this farmer?');"
+                                        >
+                                            Delete
+                                        </a>
+
+
+                                    </div>
+
+                                </td>
+
 
                             </tr>
 
 
-                        <?php endif; ?>
+                        <?php endwhile; ?>
 
 
-                    </tbody>
+                    <?php else: ?>
 
 
-                </table>
+                        <!-- NO FARMERS -->
+
+                        <tr>
+
+                            <td
+                                colspan="7"
+                                class="no-data"
+                            >
+
+                                No farmers registered yet.
+
+                            </td>
+
+                        </tr>
 
 
-            </div>
+                    <?php endif; ?>
 
 
-        </section>
+                </tbody>
 
 
-    </main>
+            </table>
 
 
-    <!-- =====================================
-         DARK MODE TOGGLE
-    ===================================== -->
-
-    <button
-        type="button"
-        id="darkModeToggle"
-        class="dark-mode-toggle"
-        title="Dark Mode"
-        aria-label="Toggle Dark Mode"
-    >
-        🌙
-    </button>
+        </div>
 
 
-    <script>
-
-        document.addEventListener(
-            "DOMContentLoaded",
-            function () {
-
-                const toggle =
-                    document.getElementById(
-                        "darkModeToggle"
-                    );
+    </section>
 
 
-                // Check saved theme
-
-                const savedTheme =
-                    localStorage.getItem(
-                        "marketlink-theme"
-                    );
+</main>
 
 
-                if (savedTheme === "dark") {
 
-                    document.body.classList.add(
-                        "dark-mode"
-                    );
+<!-- =================================================
+     DARK MODE BUTTON
+================================================= -->
 
-                    toggle.innerHTML = "☀️";
+<button
+    type="button"
+    id="darkModeToggle"
+    class="dark-mode-toggle"
+    title="Dark Mode"
+    aria-label="Toggle Dark Mode"
+>
+    🌙
+</button>
 
-                    toggle.title = "Light Mode";
-
-                }
-
-
-                // Toggle dark mode
-
-                toggle.addEventListener(
-                    "click",
-                    function () {
-
-                        document.body.classList.toggle(
-                            "dark-mode"
-                        );
-
-
-                        if (
-                            document.body.classList.contains(
-                                "dark-mode"
-                            )
-                        ) {
-
-                            localStorage.setItem(
-                                "marketlink-theme",
-                                "dark"
-                            );
-
-                            toggle.innerHTML = "☀️";
-
-                            toggle.title =
-                                "Light Mode";
-
-                        } else {
-
-                            localStorage.setItem(
-                                "marketlink-theme",
-                                "light"
-                            );
-
-                            toggle.innerHTML = "🌙";
-
-                            toggle.title =
-                                "Dark Mode";
-
-                        }
-
-                    }
-                );
-
-            }
-        );
-
-    </script>
 
 
 </body>

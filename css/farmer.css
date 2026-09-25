@@ -1,0 +1,52 @@
+@keyframes pageFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes contentRiseIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+body {
+    animation: pageFadeIn 420ms ease-out both;
+}
+
+.farmer-main {
+    animation: contentRiseIn 480ms ease-out 80ms both;
+}
+
+.sidebar-menu a,
+.sidebar-bottom a,
+.stat-card,
+.review-card,
+.template-card,
+.stock-card {
+    transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.sidebar-menu a:hover,
+.sidebar-bottom a:hover,
+.stat-card:hover,
+.review-card:hover,
+.template-card:hover,
+.stock-card:hover {
+    transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}

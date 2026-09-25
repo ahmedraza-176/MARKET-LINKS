@@ -16,7 +16,7 @@ if (!isset($_SESSION['user_id'])) {
 
 }
 
-if ($_SESSION['role'] !== 'Customer') {
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'Customer') {
 
     header("Location: ../auth/login.php");
     exit();
@@ -58,7 +58,6 @@ $sql = "
     ORDER BY n.created_at DESC
 ";
 
-
 $stmt = mysqli_prepare($conn, $sql);
 
 if (!$stmt) {
@@ -66,7 +65,6 @@ if (!$stmt) {
     die("Database error: " . mysqli_error($conn));
 
 }
-
 
 mysqli_stmt_bind_param(
     $stmt,
@@ -93,12 +91,16 @@ $count_sql = "
     AND is_read = 0
 ";
 
-
 $count_stmt = mysqli_prepare(
     $conn,
     $count_sql
 );
 
+if (!$count_stmt) {
+
+    die("Database error: " . mysqli_error($conn));
+
+}
 
 mysqli_stmt_bind_param(
     $count_stmt,
@@ -108,19 +110,17 @@ mysqli_stmt_bind_param(
 
 mysqli_stmt_execute($count_stmt);
 
-
 $count_result = mysqli_stmt_get_result(
     $count_stmt
 );
-
 
 $count_data = mysqli_fetch_assoc(
     $count_result
 );
 
-
-$unread_count =
-    (int) $count_data['unread_count'];
+$unread_count = (int) (
+    $count_data['unread_count'] ?? 0
+);
 
 ?>
 
@@ -151,7 +151,7 @@ $unread_count =
     <style>
 
         /* =====================================
-           NOTIFICATIONS PAGE
+           NOTIFICATIONS CONTAINER
         ===================================== */
 
         .notifications-container {
@@ -166,7 +166,7 @@ $unread_count =
 
 
         /* =====================================
-           HEADER
+           PAGE HEADER
         ===================================== */
 
         .page-header {
@@ -185,6 +185,8 @@ $unread_count =
 
 
         .page-header h1 {
+
+            margin: 0;
 
             color: #163a24;
 
@@ -205,13 +207,13 @@ $unread_count =
 
             font-size: 14px;
 
-            font-weight: bold;
+            font-weight: 700;
 
         }
 
 
         /* =====================================
-           NOTIFICATIONS LIST
+           NOTIFICATION LIST
         ===================================== */
 
         .notifications-list {
@@ -249,10 +251,25 @@ $unread_count =
 
             border-left: 4px solid transparent;
 
+            transition: 0.2s ease;
+
         }
 
 
-        /* UNREAD */
+        .notification:hover {
+
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 5px 15px
+                rgba(0, 0, 0, 0.10);
+
+        }
+
+
+        /* =====================================
+           UNREAD NOTIFICATION
+        ===================================== */
 
         .notification.unread {
 
@@ -264,7 +281,7 @@ $unread_count =
 
 
         /* =====================================
-           NOTIFICATION ICON
+           ICON
         ===================================== */
 
         .notification-icon {
@@ -285,7 +302,7 @@ $unread_count =
 
             justify-content: center;
 
-            font-size: 23px;
+            font-size: 22px;
 
         }
 
@@ -298,6 +315,8 @@ $unread_count =
 
             flex: 1;
 
+            min-width: 0;
+
         }
 
 
@@ -307,7 +326,7 @@ $unread_count =
 
             font-size: 17px;
 
-            margin-bottom: 6px;
+            margin: 0 0 6px;
 
         }
 
@@ -320,7 +339,7 @@ $unread_count =
 
             line-height: 1.5;
 
-            margin-bottom: 6px;
+            margin: 0 0 7px;
 
         }
 
@@ -330,6 +349,34 @@ $unread_count =
             color: #888;
 
             font-size: 12px;
+
+        }
+
+
+        /* =====================================
+           PRODUCT LINK
+        ===================================== */
+
+        .product-link {
+
+            display: inline-block;
+
+            margin-top: 5px;
+
+            color: #2e7d32;
+
+            font-weight: 700;
+
+            text-decoration: none;
+
+            font-size: 13px;
+
+        }
+
+
+        .product-link:hover {
+
+            text-decoration: underline;
 
         }
 
@@ -361,6 +408,10 @@ $unread_count =
 
             font-size: 13px;
 
+            font-weight: 600;
+
+            transition: 0.2s ease;
+
         }
 
 
@@ -377,27 +428,7 @@ $unread_count =
 
             font-size: 13px;
 
-        }
-
-
-        /* =====================================
-           PRODUCT LINK
-        ===================================== */
-
-        .product-link {
-
-            color: #2e7d32;
-
-            font-weight: bold;
-
-            text-decoration: none;
-
-        }
-
-
-        .product-link:hover {
-
-            text-decoration: underline;
+            font-weight: 600;
 
         }
 
@@ -425,9 +456,23 @@ $unread_count =
 
         .empty-icon {
 
-            font-size: 50px;
+            width: 70px;
 
-            margin-bottom: 15px;
+            height: 70px;
+
+            margin: 0 auto 15px;
+
+            border-radius: 50%;
+
+            background: #e8f5e9;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 32px;
 
         }
 
@@ -436,7 +481,7 @@ $unread_count =
 
             color: #163a24;
 
-            margin-bottom: 8px;
+            margin: 0 0 8px;
 
         }
 
@@ -444,6 +489,8 @@ $unread_count =
         .empty-box p {
 
             color: #777;
+
+            margin: 0;
 
         }
 
@@ -464,12 +511,164 @@ $unread_count =
 
             border-radius: 6px;
 
+            font-size: 14px;
+
         }
 
 
         .back-btn:hover {
 
             background: #146c43;
+
+        }
+
+
+        /* =====================================
+           NOTIFICATION COUNT SIDEBAR
+        ===================================== */
+
+        .notification-count {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            min-width: 20px;
+
+            height: 20px;
+
+            padding: 0 6px;
+
+            margin-left: 6px;
+
+            border-radius: 20px;
+
+            background: #dc3545;
+
+            color: white;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+        }
+
+
+        /* =====================================
+           DARK MODE
+        ===================================== */
+
+        body.dark-mode {
+
+            background: #111714;
+
+            color: #e8eee9;
+
+        }
+
+
+        body.dark-mode .customer-main {
+
+            background: #111714;
+
+        }
+
+
+        body.dark-mode .page-header h1 {
+
+            color: #e8eee9;
+
+        }
+
+
+        body.dark-mode .notification {
+
+            background: #1b241f;
+
+            box-shadow:
+                0 3px 12px
+                rgba(0, 0, 0, 0.25);
+
+        }
+
+
+        body.dark-mode .notification.unread {
+
+            background: #1d3023;
+
+            border-left-color: #4caf50;
+
+        }
+
+
+        body.dark-mode .notification-icon {
+
+            background: #263d2c;
+
+        }
+
+
+        body.dark-mode .notification-content h3 {
+
+            color: #e8eee9;
+
+        }
+
+
+        body.dark-mode .notification-content p {
+
+            color: #c3cec6;
+
+        }
+
+
+        body.dark-mode .notification-time {
+
+            color: #9ca9a0;
+
+        }
+
+
+        body.dark-mode .product-link {
+
+            color: #6bcf7b;
+
+        }
+
+
+        body.dark-mode .read-label {
+
+            color: #aebbb2;
+
+        }
+
+
+        body.dark-mode .empty-box {
+
+            background: #1b241f;
+
+        }
+
+
+        body.dark-mode .empty-icon {
+
+            background: #263d2c;
+
+        }
+
+
+        body.dark-mode .empty-box h2 {
+
+            color: #e8eee9;
+
+        }
+
+
+        body.dark-mode .empty-box p {
+
+            color: #aebbb2;
 
         }
 
@@ -496,11 +695,25 @@ $unread_count =
             }
 
 
+            .page-header h1 {
+
+                font-size: 24px;
+
+            }
+
+
             .notification {
 
                 align-items: flex-start;
 
                 flex-direction: column;
+
+            }
+
+
+            .notification-content {
+
+                width: 100%;
 
             }
 
@@ -518,6 +731,53 @@ $unread_count =
 
                 text-align: center;
 
+                width: 100%;
+
+            }
+
+        }
+
+
+        @media (max-width: 450px) {
+
+            .notifications-container {
+
+                padding: 20px 12px;
+
+            }
+
+
+            .notification {
+
+                padding: 15px;
+
+            }
+
+
+            .notification-icon {
+
+                width: 42px;
+
+                height: 42px;
+
+                min-width: 42px;
+
+                font-size: 19px;
+
+            }
+
+
+            .notification-content h3 {
+
+                font-size: 15px;
+
+            }
+
+
+            .notification-content p {
+
+                font-size: 13px;
+
             }
 
         }
@@ -525,8 +785,6 @@ $unread_count =
     </style>
 
 </head>
-
-<script src="../js/dark-mode.js"></script>
 
 
 <body>
@@ -666,7 +924,6 @@ $unread_count =
 
     <div class="sidebar-bottom">
 
-
         <a href="../auth/logout.php">
 
             <span></span>
@@ -674,7 +931,6 @@ $unread_count =
             Logout
 
         </a>
-
 
     </div>
 
@@ -693,16 +949,14 @@ $unread_count =
 
 
         <!-- =====================================
-             PAGE HEADER
+             HEADER
         ====================================== -->
 
         <div class="page-header">
 
 
             <h1>
-
-                 Notifications
-
+                Notifications
             </h1>
 
 
@@ -739,9 +993,10 @@ $unread_count =
 
 
                     <div
-                        class="notification
-                        <?php
-                        echo $notification['is_read'] == 0
+                        class="notification <?php
+                        echo (
+                            (int) $notification['is_read'] === 0
+                        )
                             ? 'unread'
                             : '';
                         ?>"
@@ -752,7 +1007,7 @@ $unread_count =
 
                         <div class="notification-icon">
 
-                            
+                            🔔
 
                         </div>
 
@@ -771,7 +1026,6 @@ $unread_count =
 
                             <p>
 
-
                                 <?php
 
                                 echo htmlspecialchars(
@@ -781,15 +1035,17 @@ $unread_count =
                                 ?>
 
 
-                                <?php if (
+                                <?php
+
+                                if (
                                     !empty(
                                         $notification['product_id']
                                     )
-                                ): ?>
+                                ):
 
+                                ?>
 
                                     <br>
-
 
                                     <a
                                         href="products.php"
@@ -799,7 +1055,6 @@ $unread_count =
                                         View Product
 
                                     </a>
-
 
                                 <?php endif; ?>
 
@@ -834,7 +1089,7 @@ $unread_count =
 
 
                             <?php if (
-                                $notification['is_read'] == 0
+                                (int) $notification['is_read'] === 0
                             ): ?>
 
 
@@ -853,7 +1108,7 @@ $unread_count =
 
                                 <span class="read-label">
 
-                                     Read
+                                    ✓ Read
 
                                 </span>
 
@@ -885,7 +1140,7 @@ $unread_count =
 
                 <div class="empty-icon">
 
-                    
+                    🔔
 
                 </div>
 
@@ -924,6 +1179,13 @@ $unread_count =
 
 
 </main>
+
+
+<!-- =====================================
+     DARK MODE
+===================================== -->
+
+<script src="../js/dark-mode.js"></script>
 
 
 </body>

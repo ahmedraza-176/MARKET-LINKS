@@ -1727,66 +1727,7 @@ $recent_farmers = mysqli_query(
 </button>
 
 
-<script>
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    const toggle = document.getElementById("darkModeToggle");
-
-    // Check saved theme
-    const savedTheme =
-        localStorage.getItem("marketlink-theme");
-
-
-    if (savedTheme === "dark") {
-
-        document.body.classList.add("dark-mode");
-
-        toggle.innerHTML = "☀️";
-
-        toggle.title = "Light Mode";
-
-    }
-
-
-    // Toggle dark mode
-
-    toggle.addEventListener("click", function () {
-
-        document.body.classList.toggle("dark-mode");
-
-
-        if (
-            document.body.classList.contains("dark-mode")
-        ) {
-
-            localStorage.setItem(
-                "marketlink-theme",
-                "dark"
-            );
-
-            toggle.innerHTML = "☀️";
-
-            toggle.title = "Light Mode";
-
-        } else {
-
-            localStorage.setItem(
-                "marketlink-theme",
-                "light"
-            );
-
-            toggle.innerHTML = "🌙";
-
-            toggle.title = "Dark Mode";
-
-        }
-
-    });
-
-});
-
-</script>
+<script src="../js/dark-mode.js"></script>
 
 
 </body>

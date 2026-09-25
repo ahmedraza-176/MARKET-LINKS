@@ -1643,3 +1643,62 @@ body.dark-mode .dark-mode-toggle {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* =========================
+   PAGE MOTION
+========================= */
+
+@keyframes pageFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes contentRiseIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+body {
+    animation: pageFadeIn 420ms ease-out both;
+}
+
+.main-content > .topbar,
+.main-content > .content-box,
+.main-content > .dashboard-cards,
+.main-content > .stats-grid,
+.main-content > .report-cards {
+    animation: contentRiseIn 480ms ease-out both;
+}
+
+.main-content > .topbar { animation-delay: 60ms; }
+.main-content > .content-box,
+.main-content > .dashboard-cards,
+.main-content > .stats-grid,
+.main-content > .report-cards { animation-delay: 120ms; }
+
+.sidebar-menu a:hover,
+.sidebar-bottom a:hover,
+.back-btn:hover,
+.cancel-btn:hover,
+.save-btn:hover {
+    transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+

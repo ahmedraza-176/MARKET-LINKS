@@ -389,10 +389,13 @@ body {
 
     display: flex;
 
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
 
-    padding: 30px 15px;
+    align-items: center;
+
+    justify-content: flex-start;
+
+    padding: 0 15px 40px;
 
     background: #f4f6f8;
 
@@ -400,6 +403,72 @@ body {
 
     font-family: Arial, sans-serif;
 }
+
+
+/* =========================================================
+   REGISTER NAVBAR
+========================================================= */
+
+.register-page .navbar {
+    width: 100%;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 20px 40px;
+
+    margin-bottom: 35px;
+
+    background: #ffffff;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.register-page .navbar .logo {
+    color: #198754;
+
+    font-size: 24px;
+
+    font-weight: 700;
+}
+
+.register-page .navbar .nav-links {
+    display: flex;
+
+    align-items: center;
+
+    gap: 20px;
+}
+
+.register-page .navbar .nav-links a {
+    color: #374151;
+
+    font-size: 14px;
+
+    text-decoration: none;
+
+    transition: 0.2s ease;
+}
+
+.register-page .navbar .nav-links a:hover {
+    color: #198754;
+}
+
+.register-page .navbar .nav-links a.active {
+    color: #198754;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   REGISTER CONTAINER
+========================================================= */
 
 .register-page .register-container {
     width: 100%;
@@ -540,6 +609,215 @@ body {
 
 
 /* =========================================================
+   PAGE MOTION
+========================================================= */
+
+@keyframes pageFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes contentRiseIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+body {
+    animation: pageFadeIn 420ms ease-out both;
+}
+
+.customer-main > .page-header,
+.customer-main > .welcome-section,
+.customer-main > .dashboard-cards,
+.customer-main > .products-grid,
+.customer-main > .product-grid,
+.customer-main > .content-section {
+    animation: contentRiseIn 480ms ease-out both;
+}
+
+.customer-main > .page-header { animation-delay: 60ms; }
+.customer-main > .welcome-section,
+.customer-main > .dashboard-cards,
+.customer-main > .products-grid,
+.customer-main > .product-grid,
+.customer-main > .content-section { animation-delay: 120ms; }
+
+.sidebar-menu a:hover,
+.sidebar-bottom a:hover,
+.dashboard-card:hover,
+.product-card:hover,
+.market-card:hover,
+.register-page .register-btn:hover {
+    transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+
+/* =========================================================
+   DARK MODE
+========================================================= */
+
+body.dark-mode {
+    background: #111714;
+    color: #e8eee9;
+}
+
+body.dark-mode .customer-main,
+body.dark-mode .customer-container,
+body.dark-mode .cart-page,
+body.dark-mode .checkout-page,
+body.dark-mode .markets-page,
+body.dark-mode .orders-page,
+body.dark-mode .products-page,
+body.dark-mode .profile-page,
+body.dark-mode .favorites-page,
+body.dark-mode .notifications-page {
+    background: #111714;
+    color: #e8eee9;
+}
+
+body.dark-mode .dashboard-card,
+body.dark-mode .info-box,
+body.dark-mode .register-container,
+body.dark-mode .cart-item,
+body.dark-mode .order-card,
+body.dark-mode .product-card,
+body.dark-mode .market-card,
+body.dark-mode .profile-card {
+    background: #1b241f;
+    color: #e8eee9;
+    border-color: #344139;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode p,
+body.dark-mode label,
+body.dark-mode td,
+body.dark-mode th {
+    color: #e8eee9;
+}
+
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+    background: #1b241f;
+    color: #ffffff;
+    border-color: #3b4a40;
+}
+
+body.dark-mode .navbar {
+    background: #1b241f;
+    border-color: #344139;
+}
+
+body.dark-mode .navbar .nav-links a {
+    color: #e8eee9;
+}
+
+body.dark-mode .navbar .nav-links a:hover,
+body.dark-mode .navbar .nav-links a.active {
+    color: #f4c542;
+}
+
+body.register-page.dark-mode {
+    background: #111714;
+    color: #e8eee9;
+}
+
+body.register-page.dark-mode .register-container {
+    background: #1b241f;
+    border-color: #344139;
+}
+
+body.register-page.dark-mode .register-container h2 {
+    color: #f4c542;
+}
+
+body.register-page.dark-mode .subtitle,
+body.register-page.dark-mode .login-link {
+    color: #aebbb2;
+}
+
+body.register-page.dark-mode .form-group label {
+    color: #e8eee9;
+}
+
+body.register-page.dark-mode .form-group input,
+body.register-page.dark-mode .form-group select,
+body.register-page.dark-mode .form-group textarea {
+    background: #111714;
+    color: #ffffff;
+    border-color: #3b4a40;
+}
+
+body.register-page.dark-mode .register-btn {
+    background: #f4c542;
+    color: #111714;
+}
+
+body.register-page.dark-mode .register-btn:hover {
+    background: #dcb02f;
+}
+
+body.dark-mode .dark-mode-toggle {
+    background: #f4c542;
+    color: #111714;
+}
+
+
+/* =========================================================
+   DARK MODE BUTTON
+========================================================= */
+
+.dark-mode-toggle {
+    position: fixed;
+
+    right: 25px;
+
+    bottom: 25px;
+
+    z-index: 9999;
+
+    width: 48px;
+
+    height: 48px;
+
+    border: 0;
+
+    border-radius: 50%;
+
+    background: #198754;
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    font-size: 20px;
+
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+
+/* =========================================================
    TABLET
 ========================================================= */
 
@@ -572,13 +850,11 @@ body {
         padding: 15px;
     }
 
-
     .sidebar-logo {
         margin-bottom: 10px;
 
         padding-bottom: 15px;
     }
-
 
     .sidebar-menu {
         display: grid;
@@ -586,18 +862,15 @@ body {
         grid-template-columns: repeat(2, 1fr);
     }
 
-
     .sidebar-bottom {
         margin-top: 15px;
     }
-
 
     .customer-main {
         margin-left: 0;
 
         padding: 20px 15px;
     }
-
 
     .page-header {
         align-items: flex-start;
@@ -607,19 +880,44 @@ body {
         gap: 15px;
     }
 
-
     .dashboard-cards {
         grid-template-columns: 1fr;
     }
-
 
     .steps {
         grid-template-columns: 1fr;
     }
 
+
+    /* REGISTER MOBILE */
+
+    .register-page .navbar {
+        padding: 18px 20px;
+
+        margin-bottom: 25px;
+    }
+
+    .register-page .navbar .logo {
+        font-size: 21px;
+    }
+
+    .register-page .navbar .nav-links {
+        gap: 12px;
+    }
+
 }
 
-
+.register-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.register-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
 /* =========================================================
    SMALL MOBILE
 ========================================================= */
@@ -630,115 +928,52 @@ body {
         grid-template-columns: 1fr;
     }
 
-
     .customer-main {
         padding: 15px;
     }
-
 
     .welcome-section {
         padding: 22px;
     }
 
-
     .info-box {
         padding: 22px;
     }
 
-
     .register-page {
-        padding: 20px 12px;
+        padding: 0 10px 25px;
     }
 
+    .register-page .navbar {
+        padding: 16px 12px;
+
+        margin-bottom: 20px;
+    }
+
+    .register-page .navbar .logo {
+        font-size: 20px;
+    }
+
+    .register-page .navbar .nav-links {
+        gap: 10px;
+    }
+
+    .register-page .navbar .nav-links a {
+        font-size: 13px;
+    }
 
     .register-page .register-container {
         padding: 28px 22px 25px;
     }
 
-    /* =========================
-       DARK MODE
-    ========================= */
-
-    body.dark-mode {
-        background: #111714;
-        color: #e8eee9;
-    }
-
-    body.dark-mode .customer-main,
-    body.dark-mode .customer-container,
-    body.dark-mode .cart-page,
-    body.dark-mode .checkout-page,
-    body.dark-mode .markets-page,
-    body.dark-mode .orders-page,
-    body.dark-mode .products-page,
-    body.dark-mode .profile-page,
-    body.dark-mode .favorites-page,
-    body.dark-mode .notifications-page {
-        background: #111714;
-        color: #e8eee9;
-    }
-
-    body.dark-mode .dashboard-card,
-    body.dark-mode .info-box,
-    body.dark-mode .register-container,
-    body.dark-mode .cart-item,
-    body.dark-mode .order-card,
-    body.dark-mode .product-card,
-    body.dark-mode .market-card,
-    body.dark-mode .profile-card {
-        background: #1b241f;
-        color: #e8eee9;
-        border-color: #344139;
-    }
-
-    body.dark-mode h1,
-    body.dark-mode h2,
-    body.dark-mode h3,
-    body.dark-mode h4,
-    body.dark-mode p,
-    body.dark-mode label,
-    body.dark-mode td,
-    body.dark-mode th {
-        color: #e8eee9;
-    }
-
-    body.dark-mode input,
-    body.dark-mode select,
-    body.dark-mode textarea {
-        background: #1b241f;
-        color: #ffffff;
-        border-color: #3b4a40;
-    }
-
-    body.dark-mode .dark-mode-toggle,
-    body.dark-mode .register-btn {
-        background: #f4c542;
-        color: #111714;
-    }
-
     .dark-mode-toggle {
-        position: fixed;
-        right: 25px;
-        bottom: 25px;
-        z-index: 9999;
-        width: 48px;
-        height: 48px;
-        border: 0;
-        border-radius: 50%;
-        background: #198754;
-        color: #ffffff;
-        cursor: pointer;
-        font-size: 20px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
+        right: 15px;
 
-    @media (max-width: 600px) {
-        .dark-mode-toggle {
-            right: 15px;
-            bottom: 15px;
-            width: 44px;
-            height: 44px;
-        }
+        bottom: 15px;
+
+        width: 44px;
+
+        height: 44px;
     }
 
 }

@@ -1,0 +1,309 @@
+body.dark-mode {
+    color-scheme: dark;
+    background: #111714 !important;
+    color: #e8eee9 !important;
+}
+
+body.register-page.dark-mode {
+    background: #111714 !important;
+    color: #e8eee9 !important;
+}
+
+body.register-page.dark-mode .register-container {
+    background: #1b241f !important;
+    color: #e8eee9 !important;
+    border-color: #344139 !important;
+}
+
+body.register-page.dark-mode .register-container h2 {
+    color: #f4c542 !important;
+}
+
+body.register-page.dark-mode .subtitle,
+body.register-page.dark-mode .login-link {
+    color: #aebbb2 !important;
+}
+
+body.register-page.dark-mode .form-group label {
+    color: #e8eee9 !important;
+}
+
+body.register-page.dark-mode input,
+body.register-page.dark-mode select,
+body.register-page.dark-mode textarea {
+    background: #111714 !important;
+    color: #ffffff !important;
+    border-color: #3b4a40 !important;
+}
+
+body.register-page.dark-mode .form-group input,
+body.register-page.dark-mode .form-group select,
+body.register-page.dark-mode .form-group textarea {
+    background: #111714 !important;
+    color: #ffffff !important;
+    border-color: #3b4a40 !important;
+}
+
+body.register-page.dark-mode .form-group input::placeholder,
+body.register-page.dark-mode .form-group textarea::placeholder {
+    color: #89958d !important;
+}
+
+body.register-page.dark-mode .register-btn {
+    background: #f4c542 !important;
+    color: #111714 !important;
+}
+
+body.register-page.dark-mode .dark-mode-toggle {
+    background: #f4c542 !important;
+    color: #111714 !important;
+}
+
+body.dark-mode :is(
+    .main-content,
+    .admin-main,
+    .farmer-main,
+    .customer-main,
+    .customer-container,
+    .cart-page,
+    .checkout-page,
+    .markets-page,
+    .orders-page,
+    .products-page,
+    .profile-page,
+    .favorites-page,
+    .favorites-container,
+    .notifications-page,
+    .register-page
+) {
+    background: #111714 !important;
+    color: #e8eee9 !important;
+}
+
+body.dark-mode :is(
+    .topbar,
+    .content-box,
+    .panel,
+    .section,
+    .section-card,
+    .table-card,
+    .dashboard-section,
+    .report-section,
+    .report-card,
+    .dashboard-card,
+    .stat-card,
+    .extra-card,
+    .card,
+    .form-card,
+    .profile-card,
+    .cart-box,
+    .cart-summary,
+    .checkout-box,
+    .checkout-summary,
+    .favorite-card,
+    .order-card,
+    .detail-box,
+    .info-box,
+    .create-card,
+    .template-card,
+    .templates-card,
+    .review-card,
+    .notification,
+    .empty-box,
+    .empty-favorites,
+    .no-markets,
+    .no-orders,
+    .no-products,
+    .product-card,
+    .market-card,
+    .cart-item,
+    .filter-box,
+    .filter-section,
+    .table-wrapper,
+    .notifications-list,
+    .register-container,
+    .best-product,
+    .product-row,
+    .order-item,
+    .payment-method,
+    .pickup-note,
+    .farmer-item,
+    .farmer-name,
+    .dashboard-grid > .card
+) {
+    background: #1b241f !important;
+    color: #e8eee9 !important;
+    border-color: #344139 !important;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.25);
+}
+
+body.dark-mode :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    p,
+    label,
+    td,
+    th,
+    .page-header,
+    .page-header h1,
+    .page-header p,
+    .panel-header h2,
+    .form-header h2,
+    .form-header p,
+    .customer,
+    .customer-name,
+    .farmer-name,
+    .farmer-email,
+    .market-name,
+    .table-subtext,
+    .description,
+    .detail-box,
+    .order-id,
+    .order-date,
+    .coordinates,
+    .stock,
+    .stat-card span,
+    .product-name,
+    .product-category,
+    .item-name,
+    .item-price,
+    .notification-time,
+    .notification-content,
+    .empty-cart,
+    .help-text,
+    .form-group small,
+    .cart-header,
+    .result-info
+) {
+    color: #e8eee9 !important;
+}
+
+body.dark-mode :is(.page-header p, .form-group small, .description, .notification-time, .muted, .table-subtext, .coordinates, .stock, .stat-card span) {
+    color: #aebbb2 !important;
+}
+
+body.dark-mode .category {
+    background: #243229 !important;
+    color: #a8e6b0 !important;
+    border-color: #3b6b45 !important;
+}
+
+body.dark-mode :is(.number, .price, .product-price, .total-text) {
+    color: #a8e6b0 !important;
+}
+
+body.dark-mode .stock strong {
+    color: #e8eee9 !important;
+}
+
+body.dark-mode :is(input, select, textarea) {
+    background: #111714 !important;
+    color: #ffffff !important;
+    border-color: #3b4a40 !important;
+}
+
+body.dark-mode select option {
+    background: #1b241f;
+    color: #ffffff;
+}
+
+body.dark-mode :is(table, .admin-table) {
+    background: #1b241f !important;
+    color: #e8eee9 !important;
+}
+
+body.dark-mode :is(th, .admin-table th) {
+    background: #243229 !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode :is(td, .admin-table td) {
+    border-color: #344139 !important;
+}
+
+body.dark-mode :is(.sidebar, .sidebar-logo, .sidebar-menu, .sidebar-bottom) {
+    background-color: #163a24;
+}
+
+body.dark-mode :is(.success, .success-message, .success-box) {
+    background: #183323 !important;
+    color: #a8e6b0 !important;
+    border-color: #2e7d46 !important;
+}
+
+body.dark-mode :is(.error, .error-message, .error-box, .form-error) {
+    background: #3a1d20 !important;
+    color: #ffaaaa !important;
+    border-color: #7a343a !important;
+}
+
+body.dark-mode .customer-main .cancel-btn {
+    background: #2d2222 !important;
+    color: #ffaaaa !important;
+    border-color: #8e3e44 !important;
+}
+
+body.dark-mode .customer-main .favorite-btn {
+    background: #243229 !important;
+    color: #a8e6b0 !important;
+    border-color: #3b6b45 !important;
+}
+
+body.dark-mode .customer-main .favorite-btn.favorited {
+    background: #3a1d20 !important;
+    color: #ffaaaa !important;
+    border-color: #7a343a !important;
+}
+
+.dark-mode-toggle {
+    position: fixed;
+    right: 25px;
+    bottom: 25px;
+    z-index: 9999;
+    display: flex;
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50%;
+    appearance: none;
+    -webkit-appearance: none;
+    background: #198754;
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    font-size: 20px;
+    transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.dark-mode-toggle:hover {
+    transform: scale(1.06);
+}
+
+body.dark-mode .dark-mode-toggle {
+    background: #f4c542 !important;
+    color: #111714 !important;
+}
+
+.dark-mode-toggle:focus-visible {
+    outline: 3px solid #f4c542;
+    outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+    .dark-mode-toggle {
+        right: 15px;
+        bottom: 15px;
+        width: 44px;
+        height: 44px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dark-mode-toggle {
+        transition-duration: 0.01ms;
+    }
+}
